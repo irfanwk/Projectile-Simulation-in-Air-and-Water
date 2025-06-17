@@ -3,14 +3,8 @@ import vpython as vp
 import numpy as np
 import time
 
-# ——————————————
-# Fungsi untuk simulasi satu proyektil penuh
-# ——————————————
+#fungsi simulasi SEBUAH proyektil
 def simulate_projectile(args):
-    """
-    args = (mass, v0, params, dt, t_max)
-    return: array shape (n_steps, 3) posisi setiap langkah
-    """
     mass, v0, params, dt, t_max = args
     # fungsi percepatan sama seperti semula
     def acceleration(x, v):
@@ -74,11 +68,11 @@ if __name__ == '__main__':
     volume         = (4/3)*np.pi*r**3
     area           = np.pi*r**2
     dt = 0.001
-    t_max = 10.0
+    t_max = 5.0
 
     # bangun argumen untuk tiap proyektil
     args_list = []
-    for i in range(100):  # contoh 3 proyektil
+    for i in range(7):  # contoh 3 proyektil
         mass     = 100 + i*50
         elev_rad = np.radians(20 + i*5)
         azim_rad = np.radians(i*36)

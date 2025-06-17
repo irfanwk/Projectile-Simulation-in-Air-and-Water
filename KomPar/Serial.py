@@ -14,13 +14,19 @@ def acceleration(x, v, params):
         rho = params['water_density']
         F_grav  = np.array([0, -mass*g, 0])
         F_buoy  = np.array([0, rho*volume*g, 0])
-        F_drag  = -0.5 * rho * Cd * area * v_mag * v if v_mag>0 else np.zeros(3)
+        if v_mag > 0:
+            F_drag  = -0.5 * rho * Cd * area * v_mag * v
+        else:
+            F_drag  = np.zeros(3)
         F_curr  = params['current_force']
         F_net   = F_grav + F_buoy + F_drag + F_curr
     else:        # di udara
         rho     = params['air_density']
         F_grav  = np.array([0, -mass*g, 0])
-        F_drag  = -0.5 * rho * Cd * area * v_mag * v if v_mag>0 else np.zeros(3)
+        if v_mag > 0:
+            F_drag  = -0.5 * rho * Cd * area * v_mag * v
+        else:
+            F_drag  = np.zeros(3)
         F_net   = F_grav + F_drag
     
     return F_net / mass
@@ -39,41 +45,61 @@ def rk4_step(x, v, dt, params):
     v_next = v + (k1_v + 2*k2_v + 2*k3_v + k4_v)/6.0
     return x_next, v_next
 
-# parameter
+# parameter global
 g               = 9.8
 water_density   = 1000
 air_density     = 1.225
 Cd              = 0.47
-r               = 0.1
+r               = 0.5
 volume          = (4/3)*np.pi*r**3
 area            = np.pi*r**2
-dt_global       = 0.001  
-t_max           = 5.0
-#=============================ubah jumlah bola
-number_of_proj  = 7 
+
+dt_global       = 0.001
 #=============================
+# testing simulation
+t_max           = 5.0
+number_of_proj  = 7
+#=============================
+
+# parameter arus air
+current_force_magnitude = 3000
+current_azim_deg = 45 # sudut arah arus di bidang x-z
+azim_rad = np.radians(current_azim_deg)
+# vektor arah arus
+current_dir = np.array([np.cos(azim_rad), 0.0, np.sin(azim_rad)])
+current_force = current_force_magnitude * current_dir
 
 # catat waktu mulai
 start_time = time.perf_counter()
 print(f"Waktu mulai program: {start_time:.8f} detik")
 
-scene = vp.canvas(title="Simulasi "+str(number_of_proj)+" Proyektil", width=1920, height=1080, background=vp.color.white)
-vp.box(pos=vp.vector(0, -50, 0), size=vp.vector(100, 100, 100), color=vp.color.blue, opacity=0.2)
-vp.box(pos=vp.vector(0, 0, 0), size=vp.vector(100, 0.2, 100), color=vp.color.blue, opacity=0.5)
+# scene dan permukaan air
+direction_arrow_scale = 5
+scene = vp.canvas(title="Simulasi " + str(number_of_proj) + " Proyektil", width=1920, height=1080, background=vp.color.white)
+water_box = vp.box(pos=vp.vector(0, -50, 0), size=vp.vector(100, 100, 100), color=vp.color.blue, opacity=0.2)
+water_plane = vp.box(pos=vp.vector(0, 0, 0), size=vp.vector(100, 0.2, 100), color=vp.color.blue, opacity=0.4)
 
+# panah arus air
+arrow_spacing = 15
+for x in np.arange(-40, 50, arrow_spacing):
+    for z in np.arange(-40, 50, arrow_spacing):
+        vp.arrow(pos=vp.vector(x, 0.5, z), axis=vp.vector(*current_dir) * direction_arrow_scale,
+                 shaftwidth=0.3, color=vp.color.cyan)
+
+# inisialisasi parameter proyektil
 projectiles = []
 for i in range(number_of_proj):
-    mass        = 50 + i*50              # 100,150, ...
-    elev_deg    = 10 + i*5               # 20,25, ...
-    azim_deg    = i*30                   # 0,36, ...
-    power       = 2000 + i*400           # 2000,2400, ...
+    mass        = 50 + i*50
+    elev_deg    = 10 + i*5
+    azim_deg    = i*30
+    power       = 2000 + i*400
     elev_rad    = np.radians(elev_deg)
-    azim_rad    = np.radians(azim_deg)
-    v0_mag      = power/mass           # asumsi gaya berlangsung 1 detik jadi benda diberikan gaya selama 1 detik
-    v0 = np.array([ #breakdown kecepatan
-        v0_mag * np.cos(elev_rad) * np.cos(azim_rad),
+    azim_rad2   = np.radians(azim_deg)
+    v0_mag      = power / mass
+    v0 = np.array([
+        v0_mag * np.cos(elev_rad) * np.cos(azim_rad2),
         v0_mag * np.sin(elev_rad),
-        v0_mag * np.cos(elev_rad) * np.sin(azim_rad)
+        v0_mag * np.cos(elev_rad) * np.sin(azim_rad2)
     ])
     params = {
         'mass': mass,
@@ -83,14 +109,17 @@ for i in range(number_of_proj):
         'volume': volume,
         'area': area,
         'Cd': Cd,
-        'current_force': np.zeros(3)
+        'current_force': current_force
     }
     projectiles.append({'params': params, 'v': v0})
 
-# visual objek untuk setiap proj
+# buat visual objek bola
 projs = []
 for p in projectiles:
-    proj = vp.sphere(pos=vp.vector(0,0,0), radius=r, color=vp.vector(np.random.rand(),np.random.rand(),np.random.rand()), make_trail=True)
+    proj = vp.sphere(pos=vp.vector(0,0,0), 
+                     radius=r,
+                     color=vp.vector(np.random.rand(), np.random.rand(), np.random.rand()),
+                     make_trail=True)
     projs.append({'obj': proj, 'x': np.array([0.0,0.0,0.0]), 'v': p['v'], 'params': p['params']})
 
 # MAIN LOOP
@@ -103,11 +132,8 @@ while t_global < t_max:
         p['obj'].pos = vp.vector(*x_new)
     t_global += dt_global
 
-print("Simulasi selesai pada t =", t_global)
-
 # catat waktu selesai
 end_time = time.perf_counter()
 print(f"Waktu selesai program: {end_time:.8f} detik")
-# hitung total waktu eksekusi
 total_time = end_time - start_time
 print(f"Total waktu eksekusi: {total_time:.8f} detik")

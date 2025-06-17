@@ -45,6 +45,10 @@ def rk4_step(x, v, dt, params):
     v_next = v + (k1_v + 2*k2_v + 2*k3_v + k4_v)/6.0
     return x_next, v_next
 
+# catat waktu mulai
+start_time = time.perf_counter()
+print(f"Waktu mulai program: {start_time:.8f} detik")
+
 # parameter global
 g               = 9.8
 water_density   = 1000
@@ -53,13 +57,7 @@ Cd              = 0.47
 r               = 0.5
 volume          = (4/3)*np.pi*r**3
 area            = np.pi*r**2
-
 dt_global       = 0.001
-#=============================
-# testing simulation
-t_max           = 5.0
-number_of_proj  = 7
-#=============================
 
 # parameter arus air
 current_force_magnitude = 3000
@@ -69,9 +67,12 @@ azim_rad = np.radians(current_azim_deg)
 current_dir = np.array([np.cos(azim_rad), 0.0, np.sin(azim_rad)])
 current_force = current_force_magnitude * current_dir
 
-# catat waktu mulai
-start_time = time.perf_counter()
-print(f"Waktu mulai program: {start_time:.8f} detik")
+#=============================
+# testing simulation
+t_max           = 7.0
+number_of_proj  = 40
+#=============================
+
 
 # scene dan permukaan air
 direction_arrow_scale = 5

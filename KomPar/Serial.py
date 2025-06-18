@@ -70,7 +70,7 @@ current_force = current_force_magnitude * current_dir
 #=============================
 # testing simulation
 t_max           = 7.0
-number_of_proj  = 40
+number_of_proj  = 100
 #=============================
 
 

@@ -62,10 +62,6 @@ def simulate_projectile(args):
 
 # MAIN PROGRAM
 if __name__ == '__main__':
-    # catat waktu mulai program
-    start_time = time.perf_counter()
-    print(f"Waktu mulai program: {start_time:.8f} detik")
-
     # parameter global
     g               = 9.8
     water_density   = 1000
@@ -86,8 +82,8 @@ if __name__ == '__main__':
     
     #===============================
     # testing simul
-    t_max = 7.0
-    number_of_proj = 40
+    t_max = 20.0
+    number_of_proj = 200
     #===============================
 
     # state untuk tiap proyektil
@@ -114,10 +110,18 @@ if __name__ == '__main__':
         }
         args_list.append((mass, v0, params, dt, t_max))
 
+    # catat waktu mulai program
+    start_time = time.perf_counter()
+    print(f"Waktu mulai program: {start_time:.8f} detik")
+
     # Pool untuk paralelisasi
     with Pool() as pool:
         all_trajectories = pool.map(simulate_projectile, args_list)
 
+     # catat waktu selesai perhitungann projectile
+    end_time = time.perf_counter()
+    print(f"Waktu selesai program: {end_time:.8f} detik")
+    print(f"Total waktu eksekusi: {end_time - start_time:.8f} detik")
 
     # Visualisasi world
     direction_arrow_scale = 5
@@ -145,7 +149,4 @@ if __name__ == '__main__':
         for sph, traj in spheres:
             sph.pos = vp.vector(*traj[step])
 
-    # catat waktu selesai program
-    end_time = time.perf_counter()
-    print(f"Waktu selesai program: {end_time:.8f} detik")
-    print(f"Total waktu eksekusi: {end_time - start_time:.8f} detik")
+   

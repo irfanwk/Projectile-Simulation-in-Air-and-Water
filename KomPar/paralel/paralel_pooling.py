@@ -67,7 +67,7 @@ if __name__ == '__main__':
     water_density   = 1000
     air_density     = 1.225
     Cd              = 0.47
-    r               = 0.1
+    r               = 0.5
     volume          = (4/3)*np.pi*r**3
     area            = np.pi*r**2
     dt              = 0.001
@@ -82,8 +82,9 @@ if __name__ == '__main__':
     
     #===============================
     # testing simul
-    t_max = 20.0
-    number_of_proj = 200
+    t_max = 7.0
+    number_of_proj = 100
+    number_of_workers = 2
     #===============================
 
     # state untuk tiap proyektil
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     print(f"Waktu mulai program: {start_time:.8f} detik")
 
     # Pool untuk paralelisasi
-    with Pool() as pool:
+    with Pool(processes=number_of_workers) as pool:
         all_trajectories = pool.map(simulate_projectile, args_list)
 
      # catat waktu selesai perhitungann projectile

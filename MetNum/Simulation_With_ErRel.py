@@ -85,7 +85,7 @@ if __name__ == '__main__':
     
     # Parameter arus air
     current_force_magnitude = 5000
-    current_azim_deg = 45  # sudut arah arus di bidang x-z
+    current_azim_deg = 0  # sudut arah arus di bidang x-z
     azim_rad_current = np.radians(current_azim_deg)
     current_dir = np.array([np.cos(azim_rad_current), 0.0, np.sin(azim_rad_current)])
     current_force = current_force_magnitude * current_dir
